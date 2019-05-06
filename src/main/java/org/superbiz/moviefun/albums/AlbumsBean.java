@@ -16,18 +16,23 @@
  */
 package org.superbiz.moviefun.albums;
 
+import org.springframework.context.annotation.Bean;
+import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
+import org.springframework.orm.jpa.vendor.Database;
+import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.criteria.CriteriaQuery;
+import javax.sql.DataSource;
 import java.util.List;
 
 @Repository
 public class AlbumsBean {
 
-    @PersistenceContext
+    @PersistenceContext(unitName = "albums")
     private EntityManager entityManager;
 
     @Transactional

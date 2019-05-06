@@ -16,6 +16,10 @@
  */
 package org.superbiz.moviefun.movies;
 
+import org.springframework.context.annotation.Bean;
+import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
+import org.springframework.orm.jpa.vendor.Database;
+import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,12 +28,13 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.*;
 import javax.persistence.metamodel.EntityType;
+import javax.sql.DataSource;
 import java.util.List;
 
 @Repository
 public class MoviesBean {
 
-    @PersistenceContext
+    @PersistenceContext(unitName = "movies")
     private EntityManager entityManager;
 
     public Movie find(Long id) {
