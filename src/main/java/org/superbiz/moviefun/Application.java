@@ -7,10 +7,14 @@ import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.context.annotation.Bean;
+import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.orm.jpa.vendor.Database;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
+import org.springframework.transaction.PlatformTransactionManager;
 
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
 import javax.xml.crypto.Data;
 
@@ -22,8 +26,20 @@ public class Application {
     }
 
     @Bean
+    public DatabaseServiceCredentials databaseServiceCredentials() {
+        return new DatabaseServiceCredentials(System.getenv("VCAP_SERVICES"));
+    }
+
+    @Bean
     public ServletRegistrationBean actionServletRegistration(ActionServlet actionServlet) {
         return new ServletRegistrationBean(actionServlet, "/moviefun/*");
+    }
+
+    @Bean
+    public DataSource moviesDataSource(DatabaseServiceCredentials serviceCredentials) {
+        MysqlDataSource datasource = new MysqlDataSource();
+        datasource.setURL(serviceCredentials.jdbcUrl("movies-mysql"));
+        return datasource;
     }
 
     @Bean
@@ -34,10 +50,13 @@ public class Application {
     }
 
     @Bean
-    public DataSource moviesDataSource(DatabaseServiceCredentials serviceCredentials) {
-        MysqlDataSource datasource = new MysqlDataSource();
-        datasource.setURL(serviceCredentials.jdbcUrl("movies-mysql"));
-        return datasource;
+    public PlatformTransactionManager moviesPlatformTransactionManager(EntityManagerFactory moviesContainerEntityManagerFactoryBean){
+        return new JpaTransactionManager(moviesContainerEntityManagerFactoryBean);
+    }
+
+    @Bean
+    public PlatformTransactionManager albumsPlatformTransactionManager(EntityManagerFactory albumsContainerEntityManagerFactoryBean){
+        return new JpaTransactionManager(albumsContainerEntityManagerFactoryBean);
     }
 
     @Bean
@@ -54,7 +73,7 @@ public class Application {
         LocalContainerEntityManagerFactoryBean entityManagerFactoryBean = new LocalContainerEntityManagerFactoryBean();
         entityManagerFactoryBean.setDataSource(moviesDataSource);
         entityManagerFactoryBean.setJpaVendorAdapter(hibernateJpaVendorAdapter);
-        entityManagerFactoryBean.setPackagesToScan();
+        entityManagerFactoryBean.setPackagesToScan("org.superbiz.moviefun.movies");
         entityManagerFactoryBean.setPersistenceUnitName("movies");
         return entityManagerFactoryBean;
     }
@@ -64,7 +83,7 @@ public class Application {
         LocalContainerEntityManagerFactoryBean entityManagerFactoryBean = new LocalContainerEntityManagerFactoryBean();
         entityManagerFactoryBean.setDataSource(albumsDataSource);
         entityManagerFactoryBean.setJpaVendorAdapter(hibernateJpaVendorAdapter);
-        entityManagerFactoryBean.setPackagesToScan();
+        entityManagerFactoryBean.setPackagesToScan("org.superbiz.moviefun.albums");
         entityManagerFactoryBean.setPersistenceUnitName("albums");
         return entityManagerFactoryBean;
     }

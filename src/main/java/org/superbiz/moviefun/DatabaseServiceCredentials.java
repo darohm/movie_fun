@@ -67,9 +67,4 @@ public class DatabaseServiceCredentials {
         }
     }
 
-    @Bean
-    public DatabaseServiceCredentials databaseServiceCredentials(String vcapServicesJson) {
-        return new DatabaseServiceCredentials(vcapServicesJson);
-    }
-
 }

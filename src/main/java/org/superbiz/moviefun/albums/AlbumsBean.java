@@ -25,7 +25,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.TypedQuery;
+import javax.persistence.criteria.*;
 import javax.sql.DataSource;
 import java.util.List;
 
@@ -35,7 +36,6 @@ public class AlbumsBean {
     @PersistenceContext(unitName = "albums")
     private EntityManager entityManager;
 
-    @Transactional
     public void addAlbum(Album album) {
         entityManager.persist(album);
     }
@@ -44,5 +44,14 @@ public class AlbumsBean {
         CriteriaQuery<Album> cq = entityManager.getCriteriaBuilder().createQuery(Album.class);
         cq.select(cq.from(Album.class));
         return entityManager.createQuery(cq).getResultList();
+    }
+
+    //Added to count any persisted albums to the DB
+    public int countAll() {
+        CriteriaQuery<Long> cq = entityManager.getCriteriaBuilder().createQuery(Long.class);
+        Root<Album> rt = cq.from(Album.class);
+        cq.select(entityManager.getCriteriaBuilder().count(rt));
+        TypedQuery<Long> q = entityManager.createQuery(cq);
+        return (q.getSingleResult()).intValue();
     }
 }
